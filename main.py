@@ -22,18 +22,22 @@ def show_alert_window():
 def main():
     settings = get_settings()
     
-    print("タスク実行状況を確認中...")
-    is_task_executing = analyze_task_execution(
-        api_key=settings.openai_api_key,
-        task_description=settings.task_description
-    )
-    
-    if is_task_executing:
-        print("タスクが実行中です")
-    else:
-        print("タスクが実行されていません")
-        play_alert_sound()
-        show_alert_window()
+    while True:
+        print("タスク実行状況を確認中...")
+        is_task_executing = analyze_task_execution(
+            api_key=settings.openai_api_key,
+            task_description=settings.task_description
+        )
+        
+        if is_task_executing:
+            print("タスクが実行中です")
+        else:
+            print("タスクが実行されていません")
+            play_alert_sound()
+            show_alert_window()
+        
+        time.sleep(10)  # 10秒間隔でチェック
 
 if __name__ == "__main__":
+    import time
     main()
