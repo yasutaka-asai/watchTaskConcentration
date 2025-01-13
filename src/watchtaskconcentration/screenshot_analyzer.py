@@ -16,8 +16,13 @@ class ScreenshotAnalyzer:
         timestamp = int(time.time())
         filename = f"screenshot_{timestamp}.png"
         # スクリーンショットを撮影し、解像度を下げる
-        screenshot = ImageGrab.grab()
-        screenshot = screenshot.resize((800, 600))  # 解像度を800x600に下げる
+        screenshot = ImageGrab.grab(all_screens=True)
+        # マルチスクリーン対応のため、アスペクト比を維持しつつ最大幅を1600pxに制限
+        width, height = screenshot.size
+        if width > 1600:
+            ratio = 1600 / width
+            new_height = int(height * ratio)
+            screenshot = screenshot.resize((1600, new_height))
         screenshot.save(filename, optimize=True, quality=85)  # 画質を調整
         return filename
 
@@ -37,7 +42,7 @@ class ScreenshotAnalyzer:
                                 {
                                     "role": "user",
                                     "content": [
-                                        {"type": "text", "text": f"以下の画像が{self.task_description}を行っているか判定してください。はい/いいえで答えてください。"},
+                                        {"type": "text", "text": f"以下の画像はPC画面のスクリーンショットです。{self.task_description}を行っているか判定してください。はい/いいえで答えてください。YoutubeやSNSが写り込んでいたら「いいえ」と回答してください。"},
                                         {
                                             "type": "image_url",
                                             "image_url": {
@@ -64,10 +69,10 @@ class ScreenshotAnalyzer:
 
     def cleanup(self, image_path: str):
         """一時ファイルを削除"""
-        # try:
-        #     os.remove(image_path)
-        # except OSError:
-        #     pass
+        try:
+            os.remove(image_path)
+        except OSError:
+            pass
 
 def analyze_task_execution(api_key: str, task_description: str) -> bool:
     """タスク実行状況を分析するメイン関数"""
